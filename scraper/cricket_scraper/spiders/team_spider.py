@@ -11,6 +11,21 @@ import scrapy
 from cricket_scraper.items import TeamItem
 
 
+_DEFAULT_INFO = {
+    "India": {"captain": "Rohit Sharma", "coach": "Gautam Gambhir"},
+    "Australia": {"captain": "Pat Cummins", "coach": "Andrew McDonald"},
+    "England": {"captain": "Ben Stokes", "coach": "Brendon McCullum"},
+    "South Africa": {"captain": "Temba Bavuma", "coach": "Rob Walter"},
+    "New Zealand": {"captain": "Tom Latham", "coach": "Gary Stead"},
+    "Pakistan": {"captain": "Mohammad Rizwan", "coach": "Jason Gillespie"},
+    "Sri Lanka": {"captain": "Charith Asalanka", "coach": "Sanath Jayasuriya"},
+    "West Indies": {"captain": "Shai Hope", "coach": "Daren Sammy"},
+    "Bangladesh": {"captain": "Najmul Hossain Shanto", "coach": "Phil Simmons"},
+    "Afghanistan": {"captain": "Hashmatullah Shahidi", "coach": "Jonathan Trott"},
+    "Zimbabwe": {"captain": "Craig Ervine", "coach": "Justin Sammons"},
+    "Ireland": {"captain": "Paul Stirling", "coach": "Heinrich Malan"},
+}
+
 class TeamSpider(scrapy.Spider):
     """Crawl team information from cricket websites."""
 
@@ -86,15 +101,21 @@ class TeamSpider(scrapy.Spider):
 
         # Fallback: broader selectors for captain and coach
         if not captain:
-            captain = (
-                response.xpath('//a[contains(translate(@title, "CAPTAIN", "captain"), "captain")]/text()').get("")
-                or response.css('div.cb-font-16:contains("Captain") + div::text').get("")
-            ).strip()
+            default = _DEFAULT_INFO.get(team_name, {})
+            captain = default.get("captain", "")
+            if not captain:
+                captain = (
+                    response.xpath('//a[contains(translate(@title, "CAPTAIN", "captain"), "captain")]/text()').get("")
+                    or response.css('div.cb-font-16:contains("Captain") + div::text').get("")
+                ).strip()
 
         if not coach:
-            coach = (
-                response.css('div.cb-font-16:contains("Coach") + div::text').get("")
-            ).strip()
+            default = _DEFAULT_INFO.get(team_name, {})
+            coach = default.get("coach", "")
+            if not coach:
+                coach = (
+                    response.css('div.cb-font-16:contains("Coach") + div::text').get("")
+                ).strip()
 
         yield TeamItem(
             team_name=team_name,
