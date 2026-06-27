@@ -18,9 +18,7 @@ class SeriesSpider(scrapy.Spider):
     allowed_domains = ["www.cricbuzz.com", "www.espncricinfo.com"]
 
     start_urls = [
-        # Cricbuzz series archive pages (international)
-        "https://www.cricbuzz.com/cricket-series/international",
-        "https://www.cricbuzz.com/cricket-series/league",
+        "https://www.cricbuzz.com/cricket-series",
     ]
 
     custom_settings = {
@@ -37,12 +35,14 @@ class SeriesSpider(scrapy.Spider):
         self.logger.info("Parsing series listing: %s (status %s)", response.url, response.status)
 
         # Find series entries — Cricbuzz uses list items
-        series_links = response.css('a[href*="/cricket-series/"]')
+        series_links = response.css('div.bg-white.px-4.py-3.mb-1 a[href*="/cricket-series/"]')
 
         seen_urls = set()
         for link in series_links:
             href = link.attrib.get("href", "")
-            series_name = link.css("::text").get("").strip()
+            series_name = link.css("div.text-ellipsis::text").get("").strip()
+            if not series_name:
+                series_name = link.css("::text").get("").strip()
 
             # Filter out navigation/category links
             if (

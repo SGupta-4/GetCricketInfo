@@ -87,7 +87,7 @@ class TeamSpider(scrapy.Spider):
         # Fallback: broader selectors for captain and coach
         if not captain:
             captain = (
-                response.css('a[title*="captain" i]::text').get("")
+                response.xpath('//a[contains(translate(@title, "CAPTAIN", "captain"), "captain")]/text()').get("")
                 or response.css('div.cb-font-16:contains("Captain") + div::text').get("")
             ).strip()
 
